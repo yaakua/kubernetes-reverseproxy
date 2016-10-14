@@ -19,6 +19,6 @@ echo "[nginx] confd is listening for changes on etcd..."
 
 # Start nginx
 echo "[nginx] starting nginx service..."
-service nginx start
+ /usr/sbin/nginx
 
 

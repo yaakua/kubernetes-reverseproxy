@@ -57,10 +57,17 @@ http {
 
 	{{range $spec := getvs "/registry/services/specs/*/*"}}
 	{{$data := json $spec}}
-	{{ if $data.annotations.kubernetesReverseproxy }}
-	{{$p := json $data.annotations.kubernetesReverseproxy }}
+	{{ if $data.metadata.annotations.kubernetesReverseproxy }}
+	{{$p := json $data.metadata.annotations.kubernetesReverseproxy }}
 	{{range $proxy := $p.hosts}}
 	{{if $proxy.host }}
+
+	upstream backend{{$proxy.nodePort}} {
+                 ip_hash;
+                 server 172.28.1.229:{{$proxy.nodePort}};
+                 server 172.28.1.228:{{$proxy.nodePort}};
+    }
+
 	server {
 
 		{{if $proxy.port }} listen {{$proxy.port}}; {{end}}
@@ -98,7 +105,7 @@ http {
 			proxy_set_header Connection "upgrade";
 			{{ end }}
 
-			proxy_pass http://{{$data.portalIP}}:{{$data.port}};
+			proxy_pass http://backend{{$proxy.nodePort}};
 		}
 		{{ end }}
 
@@ -127,7 +134,7 @@ http {
 			proxy_set_header Connection "upgrade";
 			{{ end }}
 
-			proxy_pass http://{{$data.portalIP}}:{{$data.port}};
+			proxy_pass http://backend{{$proxy.nodePort}};
 		}
 		{{ end }}
 
